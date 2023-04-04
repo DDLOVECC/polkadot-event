@@ -1,42 +1,30 @@
-const { ApiPromise } = require('@polkadot/api');
-const testKeyring = require('@polkadot/keyring/testing');
-const { randomAsU8a } = require('@polkadot/util-crypto');
-
-const ALICE = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
-const AMOUNT = 10000;
-
+// Import the API
+const {ApiPromise, WsProvider} = require('@polkadot/api');
+const Web_Socket = "ws://127.0.0.1:9944";
 async function main () {
-    const api = await ApiPromise.create();
+    const wsProvider = new WsProvider(Web_Socket);
+    const api = await ApiPromise.create({provider: wsProvider, types: {}});
 
-    const keyring = testKeyring.default();
+    // Subscribe to system events via storage
+    api.query.system.events((events) => {
+        console.log(`\nReceived ${events.length} events:`);
+        events.forEach((record) => {
+            // Extract the phase, event and the event types
+            const { event } = record;
+            const types = event.typeDef;
 
-    const { nonce } = await api.query.system.account(ALICE);
+            // Show what we are busy with
+            console.log(`method:${event.method}`);
+            console.log(`meta:${event.meta}`);
 
-    const alicePair = keyring.getPair(ALICE);
-
-    const recipient = keyring.addFromSeed(randomAsU8a(32)).address;
-
-    console.log('Sending', AMOUNT, 'from', alicePair.address, 'to', recipient, 'with nonce', nonce.toString());
-
-    // Do the transfer and track the actual status
-    api.tx.balances
-        .transfer(recipient, AMOUNT)
-        .signAndSend(alicePair, { nonce }, ({ events = [], status }) => {
-            console.log('Transaction status:', status.type);
-
-            if (status.isInBlock) {
-                console.log('Included at block hash', status.asInBlock.toHex());
-                console.log('Events:');
-
-                events.forEach(({ event: { data, method, section }, phase }) => {
-                    console.log('\t', phase.toString(), `: ${section}.${method}`, data.toString());
-                });
-            } else if (status.isFinalized) {
-                console.log('Finalized block hash', status.asFinalized.toHex());
-
-                process.exit(0);
-            }
+            event.data.forEach((data, index) => {
+                console.log(`eventData:${types[index].type}: ${data.toString()}`);
+            });
         });
+    });
 }
 
-main().catch(console.error);
+main().catch((error) => {
+    console.error(error);
+    process.exit(-1);
+});
