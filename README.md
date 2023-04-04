@@ -7,5 +7,4 @@
     node版本:v18.4.0
     
     运行main-event.js截图:
-    
     ![image](https://github.com/DDLOVECC/polkadot-event/blob/master/11.png)
