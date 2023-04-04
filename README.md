@@ -1,10 +1,11 @@
-##运行
+##  运行
 
-    npm install
+    安装依赖：npm install
     
-    node ./src/main-event.js
+    运行命令：node ./src/main-event.js
     
-    node 版本v18.4.0
+    node版本:v18.4.0
     
-    运行main-event.js截图
-    ![image]()
+    运行main-event.js截图:
+    
+    ![image](https://github.com/DDLOVECC/polkadot-event/blob/master/11.png)
